@@ -1,4 +1,3 @@
 #!/usr/bin/python3
-prime_numbers = [2, 3, 5]
-numbers = prime_numbers.copy()
-print('Copied List:', numbers)
+def copy_list(1):
+    list = copy_list.copy()
