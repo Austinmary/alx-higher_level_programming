@@ -1,105 +1,139 @@
+
+habiibullah
+/
+alx-higher_level_programming
+Public
+Code
+Issues
+Pull requests
+Actions
+Projects
+Security
+Insights
+alx-higher_level_programming/0x0C-python-almost_a_circle/models/base.py
+@habiibullah
+habiibullah model_base
+ 1 contributor
+Executable File  122 lines (110 sloc)  3.88 KB
 #!/usr/bin/python3
 """
-Class Module
+Module contains class Base
+Contains private class __nb_objects, and class constructor __init__
+Returns JSON string representation of list dictionaries
+Saves JSON strings of instance dictionaries into file
+Returns Python obj of JSON string representation
+Returns instance with attributes already set
+Returns list of instances
+Saves to CSV and loads from CSV file
 """
+
+
 import json
+import csv
 
 
-class Base:
-    """ base class
-    Attributes:
-        _nb_objects: number of objects created
-        id: id of object
+class Base():
+    """
+    defines class Base
+    Class Attributes:
+        __nb_objects
+    Methods:
+        __init__(self, id=None)
+    Static Methods:
+        to_json_string(list_dictionaries)   from_json_string(json_string)
+    Class Methods:
+        save_to_file(cls, list_objs)        save_to_file_csv(cls, list_objs)
+        load_from_file(cls)                 load_from_file_csv(cls)
+        create(cls, **dictionary)
     """
     __nb_objects = 0
 
     def __init__(self, id=None):
-        """initiation method
-        args:
-            id: id of object
-        """
-        if id is not None:
+        """Initialize id, increment class attribute if no id and set as id"""
+        if id:
             self.id = id
         else:
             Base.__nb_objects += 1
             self.id = Base.__nb_objects
 
-    def integer_validator(self, name, value):
-        """check if value is an integer"""
-        if type(value) is not int:
-            raise TypeError('{} must be an integer'.format(name))
-        if value <= 0:
-            raise ValueError('{} must be > 0'.format(name))
-
-    def integer_validator2(self, name, value):
-        """check if value is an integer"""
-        if type(value) is not int:
-            raise TypeError('{} must be an integer'.format(name))
-        if value < 0:
-            raise ValueError('{} must be >= 0'.format(name))
-
     @staticmethod
     def to_json_string(list_dictionaries):
-        """returns JSON string
-        args:
-            list_dictionaries: list of dictionaries
-        return:
-            return serialized list or empty list
-        """
-        return json.dumps(list_dictionaries or [])
+        """Returns JSON string representation of list dict"""
+        if list_dictionaries is None:
+            list_dictionaries = []
+        return json.dumps(list_dictionaries)
 
     @staticmethod
     def from_json_string(json_string):
-        """json to string static method
-        args:
-            json_string: json object string type
-        return:
-            list of json strings
-        """
-        if json_string:
-            return json.loads(json_string)
-        return []
+        """Returns Python obj of JSON string representation"""
+        if json_string is None or len(json_string) == 0:
+            json_string = "[]"
+        return json.loads(json_string)
 
     @classmethod
     def save_to_file(cls, list_objs):
-        """writes JSON string to a file
-        args:
-            list_objs: list of objects
-        return:
-            na
-        """
-        if list_objs:
-            j = cls.to_json_string([obj.to_dictionary() for obj in list_objs])
-        else:
-            j = '[]'
-        with open(cls.__name__ + '.json', 'w') as f:
-            f.write(j)
+        """Save json strings of all instances into file"""
+        objs = []
+        if list_objs is not None:
+            for o in list_objs:
+                objs.append(cls.to_dictionary(o))
+        filename = cls.__name__ + ".json"
+        with open(filename, "w") as f:
+            f.write(cls.to_json_string(objs))
 
     @classmethod
     def create(cls, **dictionary):
-        """return instance with all attributes set
-        args:
-            dictionary: double pointer
-        return:
-            instance with set attribute
-        """
-        if cls.__name__ == "Rectangle":
-            dummy = cls(1, 1)
+        """Returns instance with attributes already set"""
         if cls.__name__ == "Square":
             dummy = cls(1)
+        if cls.__name__ == "Rectangle":
+            dummy = cls(1, 1)
         dummy.update(**dictionary)
         return dummy
 
     @classmethod
     def load_from_file(cls):
-        '''Returns a list of instances
-        return:
-            list of instance json string
-        '''
+        """Returns list of instances"""
+        filenamee = cls.__name__ + ".json"
+        l = []
         try:
-            filename = cls.__name__ + '.json'
-            with open(filename, mode='r') as f:
-                d = cls.from_json_string(f.read())
-            return [cls.create(**x) for x in d]
-        except FileNotFoundError:
-            return []
+            with open(filenamee, "r") as f:
+                instances = cls.from_json_string(f.read())
+            for i, dic in enumerate(instances):
+                l.append(cls.create(**instances[i]))
+        except:
+            pass
+        return l
+
+        @classmethod
+    def save_to_file_csv(cls, list_objs):
+        filename = cls.__name__ + ".csv"
+        with open(filename, 'w', newline='') as f:
+            writer = csv.writer(f)
+            for o in list_objs:
+                if cls.__name__ == "Rectangle":
+                    writer.writerow([o.id, o.width, o.height, o.x, o.y])
+                if cls.__name__ == "Square":
+                    writer.writerow([o.id, o.size, o.x, o.y])
+
+    @classmethod
+    def load_from_file_csv(cls):
+        objs = []
+        filename = cls.__name__ + ".csv"
+        with open(filename, 'r', newline='') as f:
+            reader = csv.reader(f)
+            for row in reader:
+                if cls.__name__ == "Rectangle":
+                    dic = {"id": int(row[0]),
+                           "width": int(row[1]),
+                           "height": int(row[2]),
+                           "x": int(row[3]),
+                           "y": int(row[4])}
+                if cls.__name__ == "Square":
+                    dic = {"id": int(row[0]),
+                           "size": int(row[1]),
+                           "x": int(row[2]),
+                           "y": int(row[3])}
+                o = cls.create(**dic)
+                objs.append(o)
+        return objs
